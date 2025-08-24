@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum College - Interactive Business Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- SheetJS (XLSX) library for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom slider styles */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #6366f1; /* Using Indigo for the thumb */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #6366f1;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        /* Ensure sidebar is scrollable on smaller screens */
+        .sidebar-scroll {
+            height: 100vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-slate-100">
+
+    <div class="flex flex-col lg:flex-row">
+        <!-- Sidebar / Control Panel -->
+        <aside class="w-full lg:w-1/3 xl:w-1/4 bg-white p-6 border-r border-slate-200 lg:sidebar-scroll">
+            <div class="sticky top-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900 mb-2">
+                            <span class="text-indigo-600">QUANTUM</span>
+                        </h1>
+                        <p class="text-sm text-slate-500 -mt-2">COLLEGE DASHBOARD</p>
+                    </div>
+                    <button id="exportButton" class="bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow hover:bg-green-700 transition-colors">
+                        Export to Excel
+                    </button>
+                </div>
+
+                <h2 class="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">Scenario Modeler</h2>
+                
+                <div class="space-y-6">
+                    <!-- Revenue Drivers -->
+                    <h3 class="font-semibold text-slate-700 text-sm uppercase pt-2">Revenue Drivers</h3>
+                    <div><label for="studentIntake" class="flex justify-between text-sm font-medium text-slate-700"><span>Year-1 Student Intake</span><span id="studentIntakeValue" class="font-bold text-indigo-600">200</span></label><input id="studentIntake" type="range" min="100" max="300" value="200" step="10" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="annualFee" class="flex justify-between text-sm font-medium text-slate-700"><span>Gross Annual Fee (₹)</span><span id="annualFeeValue" class="font-bold text-indigo-600">2,20,000</span></label><input id="annualFee" type="range" min="100000" max="300000" value="220000" step="5000" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="scholarship" class="flex justify-between text-sm font-medium text-slate-700"><span>Avg. Scholarship (%)</span><span id="scholarshipValue" class="font-bold text-indigo-600">10%</span></label><input id="scholarship" type="range" min="0" max="25" value="10" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="appRevenue" class="flex justify-between text-sm font-medium text-slate-700"><span>Ancillary App Revenue (₹ Lakhs)</span><span id="appRevenueValue" class="font-bold text-indigo-600">10</span></label><input id="appRevenue" type="range" min="0" max="50" value="10" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="attrition" class="flex justify-between text-sm font-medium text-slate-700"><span>Student Attrition (%)</span><span id="attritionValue" class="font-bold text-indigo-600">5%</span></label><input id="attrition" type="range" min="0" max="20" value="5" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    
+                    <!-- Manpower OpEx -->
+                    <h3 class="font-semibold text-slate-700 text-sm uppercase pt-2">Manpower (OpEx)</h3>
+                    <div><label class="block text-sm font-medium text-slate-700">Leadership & Mgmt</label><div class="flex items-center space-x-2 text-xs"><span>Count: <b id="leadershipCountValue" class="text-indigo-600">3</b></span><input id="leadershipCount" type="range" min="0" max="10" value="3" step="1" class="w-full"></div><div class="flex items-center space-x-2 text-xs"><span>Salary (LPA): <b id="leadershipSalaryValue" class="font-bold text-indigo-600">25L</b></span><input id="leadershipSalary" type="range" min="15" max="50" value="25" step="1" class="w-full"></div></div>
+                    <div><label class="block text-sm font-medium text-slate-700">Senior Faculty</label><div class="flex items-center space-x-2 text-xs"><span>Count: <b id="srFacultyCountValue" class="text-indigo-600">8</b></span><input id="srFacultyCount" type="range" min="0" max="15" value="8" step="1" class="w-full"></div><div class="flex items-center space-x-2 text-xs"><span>Salary (LPA): <b id="srFacultySalaryValue" class="text-indigo-600">25L</b></span><input id="srFacultySalary" type="range" min="15" max="40" value="25" step="1" class="w-full"></div></div>
+                    <div><label class="block text-sm font-medium text-slate-700">Junior Faculty</label><div class="flex items-center space-x-2 text-xs"><span>Count: <b id="jrFacultyCountValue" class="text-indigo-600">8</b></span><input id="jrFacultyCount" type="range" min="0" max="20" value="8" step="1" class="w-full"></div><div class="flex items-center space-x-2 text-xs"><span>Salary (LPA): <b id="jrFacultySalaryValue" class="text-indigo-600">12L</b></span><input id="jrFacultySalary" type="range" min="6" max="20" value="12" step="1" class="w-full"></div></div>
+                    <div><label class="block text-sm font-medium text-slate-700">Sales & Counsellors</label><div class="flex items-center space-x-2 text-xs"><span>Count: <b id="salesCountValue" class="text-indigo-600">9</b></span><input id="salesCount" type="range" min="0" max="15" value="9" step="1" class="w-full"></div><div class="flex items-center space-x-2 text-xs"><span>Salary (LPA): <b id="salesSalaryValue" class="text-indigo-600">8L</b></span><input id="salesSalary" type="range" min="4" max="15" value="8" step="1" class="w-full"></div></div>
+                    <div><label class="block text-sm font-medium text-slate-700">Admin & Support</label><div class="flex items-center space-x-2 text-xs"><span>Count: <b id="adminCountValue" class="text-indigo-600">7</b></span><input id="adminCount" type="range" min="0" max="15" value="7" step="1" class="w-full"></div><div class="flex items-center space-x-2 text-xs"><span>Salary (LPA): <b id="adminSalaryValue" class="text-indigo-600">6L</b></span><input id="adminSalary" type="range" min="3" max="12" value="6" step="1" class="w-full"></div></div>
+                    
+                    <!-- Other OpEx -->
+                    <h3 class="font-semibold text-slate-700 text-sm uppercase pt-2">Other Expenses (OpEx)</h3>
+                    <div><label for="marketingBudget" class="flex justify-between text-sm font-medium text-slate-700"><span>Y1 Marketing Budget (₹ Lakhs)</span><span id="marketingBudgetValue" class="font-bold text-indigo-600">40</span></label><input id="marketingBudget" type="range" min="0" max="100" value="40" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="campusSize" class="flex justify-between text-sm font-medium text-slate-700"><span>Campus Size (sq. ft.)</span><span id="campusSizeValue" class="font-bold text-indigo-600">6500</span></label><input id="campusSize" type="range" min="3000" max="15000" value="6500" step="500" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="rentPerSqFt" class="flex justify-between text-sm font-medium text-slate-700"><span>Rent per sq. ft. (₹)</span><span id="rentPerSqFtValue" class="font-bold text-indigo-600">55</span></label><input id="rentPerSqFt" type="range" min="30" max="100" value="55" step="5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="contingency" class="flex justify-between text-sm font-medium text-slate-700"><span>OpEx Contingency (%)</span><span id="contingencyValue" class="font-bold text-indigo-600">5%</span></label><input id="contingency" type="range" min="0" max="15" value="5" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+
+                    <!-- Escalations -->
+                    <h3 class="font-semibold text-slate-700 text-sm uppercase pt-2">Annual Escalations</h3>
+                    <div><label for="salaryEscalation" class="flex justify-between text-sm font-medium text-slate-700"><span>Salary Escalation (%)</span><span id="salaryEscalationValue" class="font-bold text-indigo-600">8%</span></label><input id="salaryEscalation" type="range" min="0" max="15" value="8" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="rentEscalation" class="flex justify-between text-sm font-medium text-slate-700"><span>Rent Escalation (%)</span><span id="rentEscalationValue" class="font-bold text-indigo-600">5%</span></label><input id="rentEscalation" type="range" min="0" max="10" value="5" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+
+                    <!-- CapEx -->
+                    <h3 class="font-semibold text-slate-700 text-sm uppercase pt-2">Capital Expenditure (CapEx)</h3>
+                    <div><label for="fitoutCapex" class="flex justify-between text-sm font-medium text-slate-700"><span>Campus Fit-outs (₹ Lakhs)</span><span id="fitoutCapexValue" class="font-bold text-indigo-600">65</span></label><input id="fitoutCapex" type="range" min="0" max="100" value="65" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="labCapex" class="flex justify-between text-sm font-medium text-slate-700"><span>Furniture & Labs (₹ Lakhs)</span><span id="labCapexValue" class="font-bold text-indigo-600">30</span></label><input id="labCapex" type="range" min="0" max="50" value="30" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                    <div><label for="techCapex" class="flex justify-between text-sm font-medium text-slate-700"><span>CBT Lab & Tech Infra (₹ Lakhs)</span><span id="techCapexValue" class="font-bold text-indigo-600">20</span></label><input id="techCapex" type="range" min="0" max="50" value="20" step="1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="w-full lg:w-2/3 xl:w-3/4 p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto">
+                <!-- Key Metrics -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                    <div class="bg-white p-4 rounded-lg shadow"><h4 class="text-sm text-slate-500">Peak Funding Required</h4><p id="metricFunding" class="text-2xl font-bold text-indigo-600">₹1.80 Cr</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><h4 class="text-sm text-slate-500">Year 1 Net Revenue</h4><p id="metricRevenue" class="text-2xl font-bold text-slate-800">₹4.06 Cr</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><h4 class="text-sm text-slate-500">Year 1 EBITDA</h4><p id="metricEbitda" class="text-2xl font-bold text-green-500">₹0.62 Cr</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><h4 class="text-sm text-slate-500">Break-even Month</h4><p id="metricBreakeven" class="text-2xl font-bold text-slate-800">12</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><h4 class="text-sm text-slate-500">Total CapEx</h4><p id="metricCapex" class="text-2xl font-bold text-slate-800">₹1.50 Cr</p></div>
+                </div>
+
+                <!-- Financial Projections -->
+                <div class="bg-white p-6 rounded-lg shadow mb-8">
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">Financial Projections</h2>
+                    <div class="grid lg:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-semibold mb-2">36-Month P&L Projection</h3>
+                            <div class="overflow-x-auto"><table class="w-full text-sm text-left text-slate-500"><thead class="text-xs text-slate-700 uppercase bg-slate-50"><tr><th scope="col" class="px-4 py-2">Particulars (₹ Lakhs)</th><th scope="col" class="px-4 py-2 text-right">Year 1</th><th scope="col" class="px-4 py-2 text-right">Year 2</th><th scope="col" class="px-4 py-2 text-right">Year 3</th></tr></thead><tbody id="pnlTableBody"></tbody></table></div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2">Profitability Analysis</h3>
+                            <canvas id="pnlChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manpower & CapEx Tables -->
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Manpower Cost Breakdown (Year 1)</h3>
+                        <div class="overflow-x-auto"><table class="w-full text-sm text-left text-slate-500"><thead class="text-xs text-slate-700 uppercase bg-slate-50"><tr><th class="px-2 py-1">Team</th><th class="px-2 py-1 text-center">Count</th><th class="px-2 py-1 text-right">Avg Salary</th><th class="px-2 py-1 text-right">Total Cost</th></tr></thead><tbody id="manpowerTableBody"></tbody></table></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Capital Expenditure Breakdown</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between"><span>Campus Fit-outs:</span> <strong id="capexFitoutValue">₹65,00,000</strong></div>
+                            <div class="flex justify-between"><span>Furniture & Labs:</span> <strong id="capexLabValue">₹30,00,000</strong></div>
+                            <div class="flex justify-between"><span>CBT Lab & Tech Infra:</span> <strong id="capexTechValue">₹20,00,000</strong></div>
+                            <div class="flex justify-between"><span>Other (Legal, Licenses):</span> <strong>₹15,00,000</strong></div>
+                            <div class="flex justify-between"><span>Lease Security Deposit:</span> <strong id="capexLeaseValue">₹21,45,000</strong></div>
+                            <div class="flex justify-between border-t pt-2 font-bold"><span>Total CapEx:</span> <strong id="capexTotalValue" class="text-indigo-600">₹1,51,45,000</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+    // Global variable to hold all calculated data for export
+    let exportableData = {};
+
+    // DOM Elements
+    const sliders = {
+        studentIntake: document.getElementById('studentIntake'),
+        annualFee: document.getElementById('annualFee'),
+        scholarship: document.getElementById('scholarship'),
+        appRevenue: document.getElementById('appRevenue'),
+        attrition: document.getElementById('attrition'),
+        leadershipCount: document.getElementById('leadershipCount'),
+        leadershipSalary: document.getElementById('leadershipSalary'),
+        srFacultyCount: document.getElementById('srFacultyCount'),
+        srFacultySalary: document.getElementById('srFacultySalary'),
+        jrFacultyCount: document.getElementById('jrFacultyCount'),
+        jrFacultySalary: document.getElementById('jrFacultySalary'),
+        salesCount: document.getElementById('salesCount'),
+        salesSalary: document.getElementById('salesSalary'),
+        adminCount: document.getElementById('adminCount'),
+        adminSalary: document.getElementById('adminSalary'),
+        marketingBudget: document.getElementById('marketingBudget'),
+        campusSize: document.getElementById('campusSize'),
+        rentPerSqFt: document.getElementById('rentPerSqFt'),
+        contingency: document.getElementById('contingency'),
+        salaryEscalation: document.getElementById('salaryEscalation'),
+        rentEscalation: document.getElementById('rentEscalation'),
+        fitoutCapex: document.getElementById('fitoutCapex'),
+        labCapex: document.getElementById('labCapex'),
+        techCapex: document.getElementById('techCapex'),
+    };
+
+    const values = {
+        studentIntake: document.getElementById('studentIntakeValue'),
+        annualFee: document.getElementById('annualFeeValue'),
+        scholarship: document.getElementById('scholarshipValue'),
+        appRevenue: document.getElementById('appRevenueValue'),
+        attrition: document.getElementById('attritionValue'),
+        leadershipCount: document.getElementById('leadershipCountValue'),
+        leadershipSalary: document.getElementById('leadershipSalaryValue'),
+        srFacultyCount: document.getElementById('srFacultyCountValue'),
+        srFacultySalary: document.getElementById('srFacultySalaryValue'),
+        jrFacultyCount: document.getElementById('jrFacultyCountValue'),
+        jrFacultySalary: document.getElementById('jrFacultySalaryValue'),
+        salesCount: document.getElementById('salesCountValue'),
+        salesSalary: document.getElementById('salesSalaryValue'),
+        adminCount: document.getElementById('adminCountValue'),
+        adminSalary: document.getElementById('adminSalaryValue'),
+        marketingBudget: document.getElementById('marketingBudgetValue'),
+        campusSize: document.getElementById('campusSizeValue'),
+        rentPerSqFt: document.getElementById('rentPerSqFtValue'),
+        contingency: document.getElementById('contingencyValue'),
+        salaryEscalation: document.getElementById('salaryEscalationValue'),
+        rentEscalation: document.getElementById('rentEscalationValue'),
+        fitoutCapex: document.getElementById('fitoutCapexValue'),
+        labCapex: document.getElementById('labCapexValue'),
+        techCapex: document.getElementById('techCapexValue'),
+    };
+
+    const pnlTableBody = document.getElementById('pnlTableBody');
+    const manpowerTableBody = document.getElementById('manpowerTableBody');
+    
+    // Initial Data (Baseline from the plan)
+    const baseData = {
+        otherCapex: 1500000, // Legal, Licenses
+        otherOpex: 5000000, // Utilities & Misc
+        gstRate: 0.18,
+        coachingFeeRatio: 0.64, // 1.4L coaching / 2.2L total fee
+    };
+
+    let pnlChart;
+
+    // Formatting utility
+    const formatCurrency = (value, unit = 'Cr', places = 2) => {
+        if (value === 0) return '₹0';
+        if (unit === 'Cr') return `₹${(value / 10000000).toFixed(places)} Cr`;
+        if (unit === 'L') return `₹${(value / 100000).toFixed(places)} L`;
+        return `₹${new Intl.NumberFormat('en-IN').format(Math.round(value))}`;
+    };
+    const formatLakhs = (value) => (value / 100000).toFixed(2);
+
+    // Main Calculation Function
+    function calculateFinancials() {
+        // 1. Get current values from sliders
+        const input = {};
+        for (const key in sliders) {
+            input[key] = parseInt(sliders[key].value);
+        }
+
+        // 2. Update slider display values
+        for (const key in values) {
+            let text = '';
+            if (key.includes('Salary')) text = `${input[key]}L`;
+            else if (key.includes('scholarship') || key.includes('attrition') || key.includes('Escalation') || key.includes('contingency')) text = `${input[key]}%`;
+            else if (key.includes('annualFee') || key.includes('campusSize')) text = input[key].toLocaleString('en-IN');
+            else text = input[key];
+            values[key].textContent = text;
+        }
+
+        // 3. Recalculate dynamic costs
+        const manpowerCosts = {
+            leadership: input.leadershipCount * input.leadershipSalary * 100000,
+            srFaculty: input.srFacultyCount * input.srFacultySalary * 100000,
+            jrFaculty: input.jrFacultyCount * input.jrFacultySalary * 100000,
+            sales: input.salesCount * input.salesSalary * 100000,
+            admin: input.adminCount * input.adminSalary * 100000,
+        };
+        const totalSalariesY1 = Object.values(manpowerCosts).reduce((a, b) => a + b, 0);
+        const marketingCostY1 = input.marketingBudget * 100000;
+        const rentCostY1 = input.campusSize * input.rentPerSqFt * 12;
+        const leaseDeposit = input.campusSize * input.rentPerSqFt * 6;
+
+        const grossTuitionRevenueY1 = input.studentIntake * input.annualFee;
+        const netFee = input.annualFee * (1 - (input.scholarship / 100));
+        const totalNetRevenueY1 = (input.studentIntake * netFee) + (input.appRevenue * 100000);
+        
+        const coachingPortionRevenueY1 = grossTuitionRevenueY1 * baseData.coachingFeeRatio;
+        const gstPayableY1 = coachingPortionRevenueY1 * baseData.gstRate;
+
+        const baseOpexY1 = totalSalariesY1 + marketingCostY1 + rentCostY1 + gstPayableY1 + baseData.otherOpex;
+        const contingencyAmountY1 = baseOpexY1 * (input.contingency / 100);
+        const opexY1 = baseOpexY1 + contingencyAmountY1;
+
+        const totalCapex = (input.fitoutCapex + input.labCapex + input.techCapex) * 100000 + leaseDeposit + baseData.otherCapex;
+
+        // 4. Calculate P&L for 3 years
+        const ebitdaY1 = totalNetRevenueY1 - opexY1;
+        const depreciation = totalCapex * 0.10;
+        const pbtY1 = ebitdaY1 - depreciation;
+        const patY1 = pbtY1 - (pbtY1 > 0 ? pbtY1 * 0.25 : 0);
+        
+        // Year 2 & 3 Calculations with escalations
+        const salaryEscFactor = 1 + input.salaryEscalation / 100;
+        const rentEscFactor = 1 + input.rentEscalation / 100;
+        const intakeY2 = Math.floor(input.studentIntake * 1.3);
+        const returningStudentsY2 = input.studentIntake * (1 - (input.attrition / 100));
+        const totalNetRevenueY2 = (returningStudentsY2 + intakeY2) * netFee + (input.appRevenue * 100000 * 1.5);
+        const totalSalariesY2 = totalSalariesY1 * salaryEscFactor;
+        const rentCostY2 = rentCostY1 * rentEscFactor;
+        const opexY2 = totalSalariesY2 + (marketingCostY1 * 0.8) + rentCostY2 + (gstPayableY1 * 1.3) + baseData.otherOpex * 1.05;
+        const ebitdaY2 = totalNetRevenueY2 - opexY2;
+        const pbtY2 = ebitdaY2 - (depreciation * 0.9);
+        const patY2 = pbtY2 - (pbtY2 > 0 ? pbtY2 * 0.25 : 0);
+        
+        const intakeY3 = Math.floor(intakeY2 * 1.3);
+        const returningStudentsY3 = intakeY2 * (1 - (input.attrition / 100));
+        const totalNetRevenueY3 = (returningStudentsY3 + intakeY3) * netFee + (input.appRevenue * 100000 * 2);
+        const totalSalariesY3 = totalSalariesY2 * salaryEscFactor;
+        const rentCostY3 = rentCostY2 * rentEscFactor;
+        const opexY3 = totalSalariesY3 + (marketingCostY1 * 0.7) + rentCostY3 + (gstPayableY1 * 1.6) + baseData.otherOpex * 1.10;
+        const ebitdaY3 = totalNetRevenueY3 - opexY3;
+        const pbtY3 = ebitdaY3 - (depreciation * 0.81);
+        const patY3 = pbtY3 - (pbtY3 > 0 ? pbtY3 * 0.25 : 0);
+
+        // 5. Update UI Metrics
+        const monthlyBurn = (opexY1 / 12);
+        const monthlyRevenue = (totalNetRevenueY1 / 12);
+        const monthsToBreakeven = monthlyRevenue > monthlyBurn ? Math.ceil(totalCapex / (monthlyRevenue - monthlyBurn)) : 999;
+        const peakFunding = totalCapex + (ebitdaY1 < 0 ? -ebitdaY1 : 0);
+
+        document.getElementById('metricFunding').textContent = formatCurrency(peakFunding, 'Cr');
+        document.getElementById('metricRevenue').textContent = formatCurrency(totalNetRevenueY1, 'Cr');
+        document.getElementById('metricEbitda').textContent = formatCurrency(ebitdaY1, 'Cr');
+        document.getElementById('metricEbitda').className = `text-2xl font-bold ${ebitdaY1 >= 0 ? 'text-green-500' : 'text-red-500'}`;
+        document.getElementById('metricCapex').textContent = formatCurrency(totalCapex, 'Cr');
+        document.getElementById('metricBreakeven').textContent = monthsToBreakeven > 60 ? '50+' : monthsToBreakeven;
+
+        // 6. Update P&L Table
+        pnlTableBody.innerHTML = `
+            <tr class="bg-white border-b"><td class="px-4 py-2 font-medium">Net Revenue</td><td class="px-4 py-2 text-right">${formatLakhs(totalNetRevenueY1)}</td><td class="px-4 py-2 text-right">${formatLakhs(totalNetRevenueY2)}</td><td class="px-4 py-2 text-right">${formatLakhs(totalNetRevenueY3)}</td></tr>
+            <tr class="bg-white border-b"><td class="px-4 py-2 font-medium">OpEx</td><td class="px-4 py-2 text-right">${formatLakhs(opexY1)}</td><td class="px-4 py-2 text-right">${formatLakhs(opexY2)}</td><td class="px-4 py-2 text-right">${formatLakhs(opexY3)}</td></tr>
+            <tr class="bg-white border-b font-semibold"><td class="px-4 py-2">EBITDA</td><td class="px-4 py-2 text-right ${ebitdaY1 < 0 ? 'text-red-500' : 'text-green-500'}">${formatLakhs(ebitdaY1)}</td><td class="px-4 py-2 text-right ${ebitdaY2 < 0 ? 'text-red-500' : 'text-green-500'}">${formatLakhs(ebitdaY2)}</td><td class="px-4 py-2 text-right ${ebitdaY3 < 0 ? 'text-red-500' : 'text-green-500'}">${formatLakhs(ebitdaY3)}</td></tr>
+            <tr class="bg-white border-b font-semibold text-slate-800"><td class="px-4 py-2">Net Profit (PAT)</td><td class="px-4 py-2 text-right ${patY1 < 0 ? 'text-red-500' : 'text-green-500'}">${formatLakhs(patY1)}</td><td class="px-4 py-2 text-right ${patY2 < 0 ? 'text-red-500' : 'text-green-500'}">${formatLakhs(patY2)}</td><td class="px-4 py-2 text-right ${patY3 < 0 ? 'text-red-500' : 'text-green-500'}">${formatLakhs(patY3)}</td></tr>`;
+
+        // 7. Update Manpower & CapEx Tables
+        manpowerTableBody.innerHTML = `
+            <tr><td class="px-2 py-1">Leadership</td><td class="px-2 py-1 text-center">${input.leadershipCount}</td><td class="px-2 py-1 text-right">${formatCurrency(input.leadershipSalary*100000, 'L', 1)}</td><td class="px-2 py-1 text-right">${formatCurrency(manpowerCosts.leadership, 'L', 1)}</td></tr>
+            <tr><td class="px-2 py-1">Senior Faculty</td><td class="px-2 py-1 text-center">${input.srFacultyCount}</td><td class="px-2 py-1 text-right">${formatCurrency(input.srFacultySalary*100000, 'L', 1)}</td><td class="px-2 py-1 text-right">${formatCurrency(manpowerCosts.srFaculty, 'L', 1)}</td></tr>
+            <tr><td class="px-2 py-1">Junior Faculty</td><td class="px-2 py-1 text-center">${input.jrFacultyCount}</td><td class="px-2 py-1 text-right">${formatCurrency(input.jrFacultySalary*100000, 'L', 1)}</td><td class="px-2 py-1 text-right">${formatCurrency(manpowerCosts.jrFaculty, 'L', 1)}</td></tr>
+            <tr><td class="px-2 py-1">Sales & Counsel.</td><td class="px-2 py-1 text-center">${input.salesCount}</td><td class="px-2 py-1 text-right">${formatCurrency(input.salesSalary*100000, 'L', 1)}</td><td class="px-2 py-1 text-right">${formatCurrency(manpowerCosts.sales, 'L', 1)}</td></tr>
+            <tr><td class="px-2 py-1">Admin & Support</td><td class="px-2 py-1 text-center">${input.adminCount}</td><td class="px-2 py-1 text-right">${formatCurrency(input.adminSalary*100000, 'L', 1)}</td><td class="px-2 py-1 text-right">${formatCurrency(manpowerCosts.admin, 'L', 1)}</td></tr>
+            <tr class="font-bold bg-slate-50"><td class="px-2 py-1">Total Salaries</td><td></td><td></td><td class="px-2 py-1 text-right">${formatCurrency(totalSalariesY1, 'L', 1)}</td></tr>`;
+        
+        document.getElementById('capexFitoutValue').textContent = formatCurrency(input.fitoutCapex * 100000, null);
+        document.getElementById('capexLabValue').textContent = formatCurrency(input.labCapex * 100000, null);
+        document.getElementById('capexTechValue').textContent = formatCurrency(input.techCapex * 100000, null);
+        document.getElementById('capexLeaseValue').textContent = formatCurrency(leaseDeposit, null);
+        document.getElementById('capexTotalValue').textContent = formatCurrency(totalCapex, null);
+        
+        // 8. Update Chart
+        updateChart([patY1, patY2, patY3], [totalNetRevenueY1, totalNetRevenueY2, totalNetRevenueY3]);
+
+        // 9. Store data for export
+        exportableData = {
+            input,
+            calculations: {
+                manpowerCosts, totalSalariesY1, marketingCostY1, rentCostY1, leaseDeposit,
+                totalNetRevenueY1, opexY1, totalCapex, ebitdaY1, patY1,
+                totalNetRevenueY2, opexY2, ebitdaY2, patY2,
+                totalNetRevenueY3, opexY3, ebitdaY3, patY3,
+                peakFunding, monthsToBreakeven,
+                depreciation, pbtY1, pbtY2, pbtY3
+            }
+        };
+    }
+
+    // Chart Initialization and Update
+    function initializeChart() {
+        const ctx = document.getElementById('pnlChart').getContext('2d');
+        pnlChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: ['Year 1', 'Year 2', 'Year 3'], datasets: [{ label: 'Net Profit (PAT) in ₹ Lakhs', data: [], borderWidth: 1 }, { label: 'Net Revenue in ₹ Lakhs', data: [], type: 'line', borderColor: '#f59e0b', tension: 0.1 }] },
+            options: { scales: { y: { beginAtZero: false } }, plugins: { tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${context.raw.toFixed(2)}` } } } }
+        });
+    }
+
+    function updateChart(patData, revenueData) {
+        pnlChart.data.datasets[0].data = patData.map(v => v / 100000);
+        pnlChart.data.datasets[1].data = revenueData.map(v => v / 100000);
+        pnlChart.data.datasets[0].backgroundColor = patData.map(v => v >= 0 ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)');
+        pnlChart.data.datasets[0].borderColor = patData.map(v => v >= 0 ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)');
+        pnlChart.update();
+    }
+
+    // Excel Export Functionality
+    function exportToExcel() {
+        const { input, calculations } = exportableData;
+        const wb = XLSX.utils.book_new();
+
+        // Sheet 1: Summary & Inputs
+        const summaryData = [
+            ["Quantum College - Financial Summary"],
+            [],
+            ["Key Inputs", "Value", "", "Key Metrics", "Value"],
+            ["Y1 Student Intake", input.studentIntake, "", "Peak Funding Required", calculations.peakFunding],
+            ["Gross Annual Fee", input.annualFee, "", "Total CapEx", calculations.totalCapex],
+            ["Avg. Scholarship %", `${input.scholarship}%`, "", "Break-even Month", calculations.monthsToBreakeven],
+            ["Ancillary Revenue (Lakhs)", input.appRevenue, "", "Y1 EBITDA", calculations.ebitdaY1],
+            ["Student Attrition %", `${input.attrition}%`, "", "Y1 Net Profit (PAT)", calculations.patY1],
+        ];
+        const ws_summary = XLSX.utils.aoa_to_sheet(summaryData);
+        XLSX.utils.book_append_sheet(wb, ws_summary, "Summary");
+
+        // Sheet 2: 3-Year P&L
+        const pnlData = [
+            ["3-Year Profit & Loss Statement (in ₹)"],
+            [],
+            ["Particulars", "Year 1", "Year 2", "Year 3"],
+            ["Net Revenue", calculations.totalNetRevenueY1, calculations.totalNetRevenueY2, calculations.totalNetRevenueY3],
+            ["Operating Expenses (OpEx)", calculations.opexY1, calculations.opexY2, calculations.opexY3],
+            ["EBITDA", calculations.ebitdaY1, calculations.ebitdaY2, calculations.ebitdaY3],
+            ["Depreciation", calculations.depreciation, calculations.depreciation * 0.9, calculations.depreciation * 0.81],
+            ["Profit Before Tax (PBT)", calculations.pbtY1, calculations.pbtY2, calculations.pbtY3],
+            ["Tax (25%)", calculations.pbtY1 > 0 ? calculations.pbtY1 * 0.25 : 0, calculations.pbtY2 > 0 ? calculations.pbtY2 * 0.25 : 0, calculations.pbtY3 > 0 ? calculations.pbtY3 * 0.25 : 0],
+            ["Net Profit (PAT)", calculations.patY1, calculations.patY2, calculations.patY3],
+        ];
+        const ws_pnl = XLSX.utils.aoa_to_sheet(pnlData);
+        XLSX.utils.book_append_sheet(wb, ws_pnl, "3-Year P&L");
+
+        // Sheet 3: CapEx Breakdown
+        const capexData = [
+            ["Capital Expenditure (CapEx) Breakdown (in ₹)"],
+            [],
+            ["Item", "Cost"],
+            ["Campus Fit-outs", input.fitoutCapex * 100000],
+            ["Furniture & Labs", input.labCapex * 100000],
+            ["CBT Lab & Tech Infra", input.techCapex * 100000],
+            ["Lease Security Deposit", calculations.leaseDeposit],
+            ["Other (Legal, Licenses)", baseData.otherCapex],
+            ["Total CapEx", calculations.totalCapex]
+        ];
+        const ws_capex = XLSX.utils.aoa_to_sheet(capexData);
+        XLSX.utils.book_append_sheet(wb, ws_capex, "CapEx Breakdown");
+        
+        // Sheet 4: Manpower Breakdown
+        const manpowerData = [
+            ["Year 1 Manpower Cost Breakdown (in ₹)"],
+            [],
+            ["Team", "Count", "Avg. Salary (LPA)", "Annual Cost"],
+            ["Leadership & Mgmt", input.leadershipCount, input.leadershipSalary, calculations.manpowerCosts.leadership],
+            ["Senior Faculty", input.srFacultyCount, input.srFacultySalary, calculations.manpowerCosts.srFaculty],
+            ["Junior Faculty", input.jrFacultyCount, input.jrFacultySalary, calculations.manpowerCosts.jrFaculty],
+            ["Sales & Counsellors", input.salesCount, input.salesSalary, calculations.manpowerCosts.sales],
+            ["Admin & Support", input.adminCount, input.adminSalary, calculations.manpowerCosts.admin],
+            ["Total Salaries", "", "", calculations.totalSalariesY1]
+        ];
+        const ws_manpower = XLSX.utils.aoa_to_sheet(manpowerData);
+        XLSX.utils.book_append_sheet(wb, ws_manpower, "Manpower Costs");
+
+        // Sheet 5: Monthly Cash Flow
+        const cashflowData = [["24-Month Cash Flow Projection (in ₹)"], [], ["Month", "Revenue", "OpEx", "Monthly Cash Flow", "Cumulative Cash Flow"]];
+        let cumulativeCashFlow = -calculations.totalCapex;
+        const monthlyRevenue = calculations.totalNetRevenueY1 / 12;
+        const monthlyOpex = calculations.opexY1 / 12;
+        for (let i = 1; i <= 24; i++) {
+            let currentMonthRevenue = 0;
+            // Assume fees collected quarterly in months 1, 4, 7, 10
+            if (i % 3 === 1) {
+                currentMonthRevenue = monthlyRevenue * 3;
+            }
+            const monthlyCashFlow = currentMonthRevenue - monthlyOpex;
+            cumulativeCashFlow += monthlyCashFlow;
+            cashflowData.push([i, currentMonthRevenue, -monthlyOpex, monthlyCashFlow, cumulativeCashFlow]);
+        }
+        const ws_cashflow = XLSX.utils.aoa_to_sheet(cashflowData);
+        XLSX.utils.book_append_sheet(wb, ws_cashflow, "Monthly Cash Flow");
+
+
+        XLSX.writeFile(wb, "Quantum_College_Financials.xlsx");
+    }
+
+
+    // Event Listeners
+    for (const key in sliders) {
+        sliders[key].addEventListener('input', calculateFinancials);
+    }
+    document.getElementById('exportButton').addEventListener('click', exportToExcel);
+
+    // Initial Load
+    window.onload = () => {
+        initializeChart();
+        calculateFinancials();
+    };
+</script>
+
+</body>
+</html>
